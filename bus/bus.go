@@ -18,5 +18,6 @@ func (bus *Bus) TurnOn() {
 	op := bus.cpu.opcodes["op0nnn"]
 	fmt.Println(op)
 	bus.cpu.opcodes["op0nnn"].operation()
+	bus.cpu.dt.tick()
 	//bus.cpu.opcodes["0nnn"].operation(bus.cpu)
 }

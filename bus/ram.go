@@ -4,13 +4,13 @@ type Ram struct {
 	mem [4096]uint8
 }
 
-func (ram *Ram) Write(address uint16, data uint8) {
+func (ram *Ram) write(address uint16, data uint8) {
 	if address < 4096 {
 		ram.mem[address] = data
 	}
 
 }
-func (ram *Ram) Read(address uint16) uint8 {
+func (ram *Ram) read(address uint16) uint8 {
 	if address < 4096 {
 		return ram.mem[address]
 	}

@@ -1,0 +1,3 @@
+https://www.youtube.com/watch?v=OXSMx45kayw
+http://devernay.free.fr/hacks/chip8/C8TECH10.HTM#0.1
+https://github.com/veandco/go-sdl2
