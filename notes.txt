@@ -1,0 +1,1 @@
+1.after follwing the veandco instructions, the first lauch[go run\build chip8.go] takes time.
