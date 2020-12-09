@@ -3,18 +3,77 @@ package bus
 import (
 	"fmt"
 	"math/rand"
+	"os"
 	"time"
 )
 
 //I decide to spearte opcodes into 2 types.
 //those which have prefix with one(single) operation relates to its(e.g 1nnn only one operation starts with 1 at this example is JP addr)
 //and those which have prefix with multiple operations relate to its(e.g 0nnn, 00e0 and 00ee)
-func GetOperation(opcode uint16) uint16 {
+func getOperationKey(opcode uint16) string {
 	prefix := opcode >> 12
-	//if prefix!=0&&prefix!=8&&prefix!=0xe&&prefix!=0xf{
-	//	return getSingle(opcode);
-	//}
-	return prefix
+
+	if prefix != 0 && prefix != 8 && prefix != 0xe && prefix != 0xf {
+		return fmt.Sprintf("%X", prefix)
+	}
+	switch prefix {
+	case 0:
+		s := opcode & 0xff
+		if s == 0xe0 {
+			return "0.1"
+		} else if s == 0xee {
+			return "0.2"
+		}
+		return "0.0"
+	case 8:
+		s := opcode & 0x0f
+		if s == 1 {
+			return "8.1"
+		} else if s == 2 {
+			return "8.2"
+		} else if s == 3 {
+			return "8.3"
+		} else if s == 4 {
+			return "8.4"
+		} else if s == 5 {
+			return "8.5"
+		} else if s == 6 {
+			return "8.6"
+		} else if s == 7 {
+			return "8.7"
+		} else if s == 0xe {
+			return "8.8"
+		}
+		return "8.0"
+	case 0xe:
+		s := opcode & 0xff
+		if s == 0xa1 {
+			return "E.1"
+		}
+		return "E.0"
+	case 0xf:
+		s := opcode & 0xff
+		if s == 0x0a {
+			return "F.1"
+		} else if s == 0x15 {
+			return "F.2"
+		} else if s == 0x18 {
+			return "F.3"
+		} else if s == 0x1e {
+			return "F.4"
+		} else if s == 0x29 {
+			return "F.5"
+		} else if s == 0x33 {
+			return "F.6"
+		} else if s == 0x55 {
+			return "F.7"
+		} else if s == 0x65 {
+			return "F.8"
+		}
+		return "F.0"
+
+	}
+	return ""
 }
 
 type Opcode struct {
@@ -25,25 +84,47 @@ type Opcode struct {
 
 func (cpu *Cpu) configOpcodes() {
 
-	cpu.opcodes["op0nnn"] = Opcode{name: "op0nnn", operation: cpu.op0nnn}
-	cpu.opcodes["op00E0"] = Opcode{name: "op00E0", operation: cpu.op00E0}
-	cpu.opcodes["op00EE"] = Opcode{name: "op00EE", operation: cpu.op00EE}
-	cpu.opcodes["op1nnn"] = Opcode{name: "op1nnn", operation: cpu.op1nnn}
-	cpu.opcodes["op2nnn"] = Opcode{name: "op2nnn", operation: cpu.op2nnn}
-	//op3xkk
-	//op4xkk
-	//op5xy0
-	//op6xkk
-	//op7xkk
-	//op8xy0
-	//op8xy1
-	//op8xy2
-	//op8xy3
-	//op8xy4
-	//op8xy5
-	//op8xy6
-	//op8xy7
-	//op8xyE
+	cpu.opcodes["0.0"] = Opcode{name: "op0nnn", operation: cpu.op0nnn}
+	cpu.opcodes["0.1"] = Opcode{name: "op00E0", operation: cpu.op00E0}
+	cpu.opcodes["0.2"] = Opcode{name: "op00EE", operation: cpu.op00EE}
+
+	cpu.opcodes["1"] = Opcode{name: "op1nnn", operation: cpu.op1nnn}
+	cpu.opcodes["2"] = Opcode{name: "op2nnn", operation: cpu.op2nnn}
+	cpu.opcodes["3"] = Opcode{name: "op3xkk", operation: cpu.op3xkk}
+	cpu.opcodes["4"] = Opcode{name: "op4xkk", operation: cpu.op4xkk}
+	cpu.opcodes["5"] = Opcode{name: "op5xy0", operation: cpu.op5xy0}
+	cpu.opcodes["6"] = Opcode{name: "op6xkk", operation: cpu.op6xkk}
+	cpu.opcodes["7"] = Opcode{name: "op7xkk", operation: cpu.op7xkk}
+
+	cpu.opcodes["8.0"] = Opcode{name: "op8xy0", operation: cpu.op8xy0}
+	cpu.opcodes["8.1"] = Opcode{name: "op8xy1", operation: cpu.op8xy1}
+	cpu.opcodes["8.2"] = Opcode{name: "op8xy2", operation: cpu.op8xy2}
+	cpu.opcodes["8.3"] = Opcode{name: "op8xy3", operation: cpu.op8xy3}
+	cpu.opcodes["8.4"] = Opcode{name: "op8xy4", operation: cpu.op8xy4}
+	cpu.opcodes["8.5"] = Opcode{name: "op8xy5", operation: cpu.op8xy5}
+	cpu.opcodes["8.6"] = Opcode{name: "op8xy6", operation: cpu.op8xy6}
+	cpu.opcodes["8.7"] = Opcode{name: "op8xy7", operation: cpu.op8xy7}
+	cpu.opcodes["8.8"] = Opcode{name: "op8xyE", operation: cpu.op8xyE}
+
+	cpu.opcodes["9"] = Opcode{name: "op9xy0", operation: cpu.op9xy0}
+	cpu.opcodes["A"] = Opcode{name: "opAnnn", operation: cpu.opAnnn}
+	cpu.opcodes["B"] = Opcode{name: "opBnnn", operation: cpu.opBnnn}
+	cpu.opcodes["C"] = Opcode{name: "opCxkk", operation: cpu.opCxkk}
+	cpu.opcodes["D"] = Opcode{name: "opDxyn", operation: cpu.opDxyn}
+
+	cpu.opcodes["E.0"] = Opcode{name: "opEx9E", operation: cpu.opEx9E}
+	cpu.opcodes["E.1"] = Opcode{name: "opExA1", operation: cpu.opExA1}
+
+	cpu.opcodes["F.0"] = Opcode{name: "opFx07", operation: cpu.opFx07}
+	cpu.opcodes["F.1"] = Opcode{name: "opFx0A", operation: cpu.opFx0A}
+	cpu.opcodes["F.2"] = Opcode{name: "opFx15", operation: cpu.opFx15}
+	cpu.opcodes["F.3"] = Opcode{name: "opFx18", operation: cpu.opFx18}
+	cpu.opcodes["F.4"] = Opcode{name: "opFx1E", operation: cpu.opFx1E}
+	cpu.opcodes["F.5"] = Opcode{name: "opFx29", operation: cpu.opFx29}
+	cpu.opcodes["F.6"] = Opcode{name: "opFx33", operation: cpu.opFx33}
+	cpu.opcodes["F.7"] = Opcode{name: "opFx55", operation: cpu.opFx55}
+	cpu.opcodes["F.8"] = Opcode{name: "opFx65", operation: cpu.opFx65}
+
 }
 
 /*
@@ -63,21 +144,15 @@ func getx(v uint16) uint8 {
 	return uint8((v >> 8) & 0xf)
 }
 func gety(v uint16) uint8 {
-	return uint8((v >> 12) & 0xf)
+	return uint8((v >> 4) & 0xf)
 }
 func getkk(v uint16) uint8 {
 	return uint8(v & 0xff)
 }
 
-func (cpu *Cpu) operate() {
-	opcodePrefix := uint16(cpu.bus.ram.read(cpu.PC))
-	cpu.PC += 1
-	opcodeSuffix := uint16(cpu.bus.ram.read(cpu.PC))
-	opcode := (opcodePrefix << 8) | opcodeSuffix
-	_ = opcode
-}
 func (cpu *Cpu) op0nnn() {
-	fmt.Println("wellcome op0nnn")
+	fmt.Printf("%x\n", cpu.opcode)
+	os.Exit(1)
 }
 
 /*
@@ -85,7 +160,8 @@ func (cpu *Cpu) op0nnn() {
 Clear the display.
 */
 func (cpu *Cpu) op00E0() {
-
+	fmt.Println("clear screen")
+	cpu.bus.display.clear()
 }
 
 /*
@@ -153,7 +229,7 @@ The interpreter compares register Vx to register Vy, and if they are equal, incr
 */
 func (cpu *Cpu) op5xy0() {
 	x := getx(cpu.opcode)
-	y := getx(cpu.opcode)
+	y := gety(cpu.opcode)
 	if cpu.registers[x] == cpu.registers[y] {
 		cpu.PC += 2
 	}
@@ -188,7 +264,7 @@ Stores the value of register Vy in register Vx.
 */
 func (cpu *Cpu) op8xy0() {
 	x := getx(cpu.opcode)
-	y := getx(cpu.opcode)
+	y := gety(cpu.opcode)
 	cpu.registers[x] = cpu.registers[y]
 }
 
@@ -199,7 +275,7 @@ Performs a bitwise OR on the values of Vx and Vy, then stores the result in Vx. 
 */
 func (cpu *Cpu) op8xy1() {
 	x := getx(cpu.opcode)
-	y := getx(cpu.opcode)
+	y := gety(cpu.opcode)
 	cpu.registers[x] = cpu.registers[x] | cpu.registers[y]
 }
 
@@ -210,7 +286,7 @@ Performs a bitwise AND on the values of Vx and Vy, then stores the result in Vx.
 */
 func (cpu *Cpu) op8xy2() {
 	x := getx(cpu.opcode)
-	y := getx(cpu.opcode)
+	y := gety(cpu.opcode)
 	cpu.registers[x] = cpu.registers[x] & cpu.registers[y]
 }
 
@@ -221,7 +297,7 @@ Performs a bitwise exclusive OR on the values of Vx and Vy, then stores the resu
 */
 func (cpu *Cpu) op8xy3() {
 	x := getx(cpu.opcode)
-	y := getx(cpu.opcode)
+	y := gety(cpu.opcode)
 	cpu.registers[x] = cpu.registers[x] ^ cpu.registers[y]
 }
 
@@ -232,7 +308,7 @@ The values of Vx and Vy are added together. If the result is greater than 8 bits
 */
 func (cpu *Cpu) op8xy4() {
 	x := getx(cpu.opcode)
-	y := getx(cpu.opcode)
+	y := gety(cpu.opcode)
 	res := uint16(x) + uint16(y)
 	cpu.registers[x] = uint8(res)
 
@@ -250,13 +326,14 @@ If Vx > Vy, then VF is set to 1, otherwise 0. Then Vy is subtracted from Vx, and
 */
 func (cpu *Cpu) op8xy5() {
 	x := getx(cpu.opcode)
-	y := getx(cpu.opcode)
+	y := gety(cpu.opcode)
 	if cpu.registers[x] > cpu.registers[y] {
 		cpu.registers[0xf] = 1
 	} else {
 		cpu.registers[0xf] = 0
 	}
 	cpu.registers[x] = cpu.registers[x] - cpu.registers[y]
+	//check this x>=y
 }
 
 /*
@@ -266,11 +343,7 @@ If the least-significant bit of Vx is 1, then VF is set to 1, otherwise 0. Then 
 */
 func (cpu *Cpu) op8xy6() {
 	x := getx(cpu.opcode)
-	if cpu.registers[x]&1 == 1 {
-		cpu.registers[0xf] = 1
-	} else {
-		cpu.registers[0xf] = 0
-	}
+	cpu.registers[0xf] = cpu.registers[x] & 1
 	cpu.registers[x] = cpu.registers[x] >> 1
 }
 
@@ -281,13 +354,14 @@ If Vy > Vx, then VF is set to 1, otherwise 0. Then Vx is subtracted from Vy, and
 */
 func (cpu *Cpu) op8xy7() {
 	x := getx(cpu.opcode)
-	y := getx(cpu.opcode)
+	y := gety(cpu.opcode)
 	if cpu.registers[y] > cpu.registers[x] {
 		cpu.registers[0xf] = 1
 	} else {
 		cpu.registers[0xf] = 0
 	}
 	cpu.registers[x] = cpu.registers[y] - cpu.registers[x]
+	//check this x<=y
 }
 
 /*
@@ -297,11 +371,7 @@ If the most-significant bit of Vx is 1, then VF is set to 1, otherwise to 0. The
 */
 func (cpu *Cpu) op8xyE() {
 	x := getx(cpu.opcode)
-	if cpu.registers[x]&0x80 == 0x80 {
-		cpu.registers[0xf] = 1
-	} else {
-		cpu.registers[0xf] = 0
-	}
+	cpu.registers[0xf] = cpu.registers[x] >> 7
 	cpu.registers[x] = cpu.registers[x] << 1
 }
 
@@ -312,7 +382,7 @@ The values of Vx and Vy are compared, and if they are not equal, the program cou
 */
 func (cpu *Cpu) op9xy0() {
 	x := getx(cpu.opcode)
-	y := getx(cpu.opcode)
+	y := gety(cpu.opcode)
 	if cpu.registers[x] != cpu.registers[y] {
 		cpu.PC += 2
 	}
@@ -350,6 +420,7 @@ func (cpu *Cpu) opCxkk() {
 	rand.Seed(time.Now().UnixNano())
 	t := uint8(rand.Intn(256))
 	cpu.registers[x] = kk & t
+	fmt.Println("rand:", t)
 }
 
 /*
@@ -358,11 +429,49 @@ Display n-byte sprite starting at memory location I at (Vx, Vy), set VF = collis
 The interpreter reads n bytes from memory, starting at the address stored in I. These bytes are then displayed as sprites on screen at coordinates (Vx, Vy). Sprites are XORed onto the existing screen. If this causes any pixels to be erased, VF is set to 1, otherwise it is set to 0. If the sprite is positioned so part of it is outside the coordinates of the display, it wraps around to the opposite side of the screen. See instruction 8xy3 for more information on XOR, and section 2.4, Display, for more information on the Chip-8 screen and sprites.
 */
 func (cpu *Cpu) opDxyn() {
+	n := uint16(getn(cpu.opcode))
 	x := getx(cpu.opcode)
-	y := getx(cpu.opcode)
-	_ = x
-	_ = y
-	//TODO:finish thi function
+	y := gety(cpu.opcode)
+	posX := int(cpu.registers[x])
+	posY := int(cpu.registers[y])
+	cpu.registers[0xf] = 0
+	for i := uint16(0); i < n; i++ {
+		data := cpu.bus.ram.read(cpu.I + i)
+		//pointer to the curr pixel(bit) in the data
+		stepPixel := 7
+		posY = posY % cpu.bus.display.height
+		for ; stepPixel >= 0; stepPixel-- {
+			newPixelBit := (data >> stepPixel) & 0x1
+			if newPixelBit == 1 {
+
+				currPosX := posX + (7 - stepPixel)
+				//currPosX = currPosX % cpu.bus.display.width
+
+				oldpixel := cpu.bus.display.getPixel(currPosX, posY)
+				//indecates if the curr present pixel is black pixel or not
+				oldPixelBit := uint8(0)
+				if oldpixel.r == 255 && oldpixel.b == 255 && oldpixel.g == 255 {
+					oldPixelBit = uint8(1)
+				}
+
+				//check if there is collision
+				if oldPixelBit+newPixelBit == 2 {
+					cpu.registers[0xf] = 1
+				}
+				c := Black
+
+				if (oldPixelBit ^ newPixelBit) == 1 {
+					c = White
+
+				}
+				cpu.bus.display.setPixel(currPosX, posY, c)
+			}
+
+		}
+		posY++
+	}
+
+	//TODO:finish this function
 }
 
 /*
@@ -371,9 +480,14 @@ Skip next instruction if key with the value of Vx is pressed.
 Checks the keyboard, and if the key corresponding to the value of Vx is currently in the down position, PC is increased by 2.
 */
 func (cpu *Cpu) opEx9E() {
+
 	x := getx(cpu.opcode)
-	_ = x
-	//TODO:finish thi function
+	keyCode := fmt.Sprintf("%X", x)
+	//fmt.Printf("checks if %s key pressed\n", keyCode)
+	if cpu.bus.joypad.keys[keyCode].pressed {
+		//fmt.Printf("%s key is pressed\n", keyCode)
+		cpu.PC = cpu.PC + 2
+	}
 }
 
 /*
@@ -381,10 +495,14 @@ ExA1 - SKNP Vx
 Skip next instruction if key with the value of Vx is not pressed.
 Checks the keyboard, and if the key corresponding to the value of Vx is currently in the up position, PC is increased by 2.
 */
-func (cpu *Cpu) opSKNP() {
+func (cpu *Cpu) opExA1() {
 	x := getx(cpu.opcode)
-	_ = x
-	//TODO:finish thi function
+	keyCode := fmt.Sprintf("%X", x)
+	//fmt.Printf("checks if %s key is not pressed\n", keyCode)
+	if !cpu.bus.joypad.keys[keyCode].pressed {
+		//fmt.Printf("%s key is NOT pressed\n", keyCode)
+		cpu.PC = cpu.PC + 2
+	}
 }
 
 /*
@@ -403,9 +521,10 @@ Wait for a key press, store the value of the key in Vx.
 All execution stops until a key is pressed, then the value of that key is stored in Vx.
 */
 func (cpu *Cpu) opFx0A() {
+	fmt.Println("waiting for key")
 	x := getx(cpu.opcode)
-	_ = x
-	//TODO:finish thi function
+	key := cpu.bus.joypad.getKey()
+	cpu.registers[x] = key.value
 }
 
 /*
@@ -445,8 +564,8 @@ The value of I is set to the location for the hexadecimal sprite corresponding t
 */
 func (cpu *Cpu) opFx29() {
 	x := getx(cpu.opcode)
-	_ = x
-	//TODO:finish this function
+	cpu.I = uint16(5 * cpu.registers[x])
+
 }
 
 /*
@@ -479,7 +598,7 @@ func (cpu *Cpu) opFx55() {
 	for i := uint16(0); i <= x; i++ {
 		cpu.bus.ram.write(cpu.I+i, cpu.registers[i])
 	}
-
+	cpu.I = cpu.I + x + 1
 }
 
 /*
@@ -492,5 +611,5 @@ func (cpu *Cpu) opFx65() {
 	for i := uint16(0); i <= x; i++ {
 		cpu.registers[i] = cpu.bus.ram.read(cpu.I + i)
 	}
-
+	cpu.I = cpu.I + x + 1
 }

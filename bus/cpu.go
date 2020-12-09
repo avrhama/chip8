@@ -1,5 +1,7 @@
 package bus
 
+import "fmt"
+
 /*type Register struct {
 	High byte
 	Low  byte
@@ -12,6 +14,9 @@ type Timer struct {
 }
 
 func (timer *Timer) tick() {
+	if timer.value == 0 {
+		return
+	}
 	timer.value--
 	if timer.value == 0 {
 		timer.active = false
@@ -34,5 +39,25 @@ type Cpu struct {
 
 func (cpu *Cpu) configCpu() {
 	cpu.opcodes = make(map[string]Opcode)
+	cpu.PC = 0x200
 
+}
+func (cpu *Cpu) execute() {
+	opcodePrefix := uint16(cpu.bus.ram.read(cpu.PC))
+	opcodeSuffix := uint16(cpu.bus.ram.read(cpu.PC + 1))
+	cpu.PC += 2
+	opcode := (opcodePrefix << 8) | opcodeSuffix
+	cpu.opcode = opcode
+	operationKey := getOperationKey(cpu.opcode)
+
+	if op, ok := cpu.opcodes[operationKey]; ok {
+		//fmt.Printf("the opcode is:%v\n", op.name)
+		op.operation()
+	} else {
+		operationKey = getOperationKey(cpu.opcode)
+		fmt.Printf("Wrong Key:%X\n", operationKey)
+
+	}
+
+	//fmt.Printf("the opcode is:%v\n", op.name)
 }

@@ -1,5 +1,11 @@
 package bus
 
+import (
+	"fmt"
+	"io/ioutil"
+	"os"
+)
+
 type Ram struct {
 	mem [4096]uint8
 }
@@ -116,4 +122,16 @@ func (ram *Ram) config() {
 	ram.mem[78] = 0x80
 	ram.mem[79] = 0x80
 
+}
+func (ram *Ram) loadRom(path string) {
+
+	data, err := ioutil.ReadFile(path)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	size := uint16(len(data))
+	for i := uint16(0); i < size; i++ {
+		ram.write(i+0x200, data[i])
+	}
 }

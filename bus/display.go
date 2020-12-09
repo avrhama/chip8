@@ -7,25 +7,37 @@ import (
 	"github.com/veandco/go-sdl2/sdl"
 )
 
-type color struct {
+type Color struct {
 	r, g, b byte
 }
 
-func (display *Display) setPixel(x, y int, c color) {
-	index := (y*display.height + x) * 4
+var (
+	White = Color{r: 255, g: 255, b: 255}
+	Black = Color{r: 0, g: 0, b: 0}
+)
+
+func (display *Display) setPixel(x, y int, c Color) {
+	index := (y*display.width + x) * 4
 
 	display.pixels[index] = c.r
 	display.pixels[index+1] = c.g
 	display.pixels[index+2] = c.b
 }
+func (display *Display) getPixel(x, y int) Color {
+	index := (y*display.width + x) * 4
+	c := Color{r: display.pixels[index], g: display.pixels[index+1], b: display.pixels[index+2]}
+	return c
+}
 
 type Display struct {
-	width    int
-	height   int
-	window   *sdl.Window
-	renderer *sdl.Renderer
-	tex      *sdl.Texture
-	pixels   []byte
+	windowWidth  int32
+	windowHeight int32
+	width        int
+	height       int
+	window       *sdl.Window
+	renderer     *sdl.Renderer
+	tex          *sdl.Texture
+	pixels       []byte
 }
 
 func (display *Display) draw() {
@@ -35,13 +47,14 @@ func (display *Display) draw() {
 }
 
 func (display *Display) config() {
+
 	err := sdl.Init(sdl.INIT_EVERYTHING)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
-	display.window, err = sdl.CreateWindow("chip8", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, int32(display.width), int32(display.height), sdl.WINDOW_SHOWN)
+	display.window, err = sdl.CreateWindow("chip8", sdl.WINDOWPOS_UNDEFINED, sdl.WINDOWPOS_UNDEFINED, display.windowWidth, display.windowHeight, sdl.WINDOW_SHOWN)
 	if err != nil {
 		fmt.Println(err)
 		display.turnOff(0)
@@ -67,7 +80,7 @@ func (display *Display) config() {
 func (display *Display) test() {
 	for y := 0; y < display.height; y++ {
 		for x := 0; x < display.width; x++ {
-			display.setPixel(x, y, color{255, 0, 0})
+			display.setPixel(x, y, Color{255, 0, 0})
 		}
 	}
 	display.tex.Update(nil, display.pixels, display.width*4)
@@ -89,4 +102,10 @@ func (display *Display) turnOff(flag uint8) {
 	}
 
 	sdl.Quit()
+}
+func (display *Display) clear() {
+	for i := 0; i < len(display.pixels); i++ {
+		display.pixels[i] = 255
+	}
+
 }
