@@ -1,4 +1,5 @@
 # chip8
+CHIP8 interpreter written in go(golang)
 # Credits
 
 SDL2:
