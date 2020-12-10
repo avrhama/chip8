@@ -33,7 +33,7 @@ func (bus *Bus) TurnOn(romPath string) {
 	//this variable controls the speed of the game  increasing it increases the game speed.
 	oPTT := 10
 	oPTTCounter := 0
-
+	sdl.Delay(5000)
 	for {
 
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
