@@ -105,7 +105,7 @@ func (display *Display) turnOff(flag uint8) {
 }
 func (display *Display) clear() {
 	for i := 0; i < len(display.pixels); i++ {
-		display.pixels[i] = 255
+		display.pixels[i] = 0
 	}
 
 }

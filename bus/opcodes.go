@@ -77,8 +77,8 @@ func getOperationKey(opcode uint16) string {
 }
 
 type Opcode struct {
-	name string
-	//operation func(cpu *Cpu)
+	//used for debugging
+	name      string
 	operation func()
 }
 
@@ -160,7 +160,6 @@ func (cpu *Cpu) op0nnn() {
 Clear the display.
 */
 func (cpu *Cpu) op00E0() {
-	fmt.Println("clear screen")
 	cpu.bus.display.clear()
 }
 
@@ -309,8 +308,8 @@ The values of Vx and Vy are added together. If the result is greater than 8 bits
 func (cpu *Cpu) op8xy4() {
 	x := getx(cpu.opcode)
 	y := gety(cpu.opcode)
-	res := uint16(x) + uint16(y)
-	cpu.registers[x] = uint8(res)
+	res := uint16(cpu.registers[x]) + uint16(cpu.registers[y])
+	cpu.registers[x] = cpu.registers[x] + cpu.registers[y]
 
 	if res > 255 {
 		cpu.registers[0xf] = 1
@@ -333,7 +332,6 @@ func (cpu *Cpu) op8xy5() {
 		cpu.registers[0xf] = 0
 	}
 	cpu.registers[x] = cpu.registers[x] - cpu.registers[y]
-	//check this x>=y
 }
 
 /*
@@ -361,7 +359,6 @@ func (cpu *Cpu) op8xy7() {
 		cpu.registers[0xf] = 0
 	}
 	cpu.registers[x] = cpu.registers[y] - cpu.registers[x]
-	//check this x<=y
 }
 
 /*
@@ -416,11 +413,9 @@ The interpreter generates a random number from 0 to 255, which is then ANDed wit
 func (cpu *Cpu) opCxkk() {
 	x := getx(cpu.opcode)
 	kk := getkk(cpu.opcode)
-	//TODO:place it outside the function
 	rand.Seed(time.Now().UnixNano())
 	t := uint8(rand.Intn(256))
 	cpu.registers[x] = kk & t
-	fmt.Println("rand:", t)
 }
 
 /*
@@ -445,7 +440,7 @@ func (cpu *Cpu) opDxyn() {
 			if newPixelBit == 1 {
 
 				currPosX := posX + (7 - stepPixel)
-				//currPosX = currPosX % cpu.bus.display.width
+				currPosX = currPosX % cpu.bus.display.width
 
 				oldpixel := cpu.bus.display.getPixel(currPosX, posY)
 				//indecates if the curr present pixel is black pixel or not
@@ -470,8 +465,6 @@ func (cpu *Cpu) opDxyn() {
 		}
 		posY++
 	}
-
-	//TODO:finish this function
 }
 
 /*
@@ -480,12 +473,9 @@ Skip next instruction if key with the value of Vx is pressed.
 Checks the keyboard, and if the key corresponding to the value of Vx is currently in the down position, PC is increased by 2.
 */
 func (cpu *Cpu) opEx9E() {
-
 	x := getx(cpu.opcode)
-	keyCode := fmt.Sprintf("%X", x)
-	//fmt.Printf("checks if %s key pressed\n", keyCode)
+	keyCode := fmt.Sprintf("%X", cpu.registers[x])
 	if cpu.bus.joypad.keys[keyCode].pressed {
-		//fmt.Printf("%s key is pressed\n", keyCode)
 		cpu.PC = cpu.PC + 2
 	}
 }
@@ -497,10 +487,8 @@ Checks the keyboard, and if the key corresponding to the value of Vx is currentl
 */
 func (cpu *Cpu) opExA1() {
 	x := getx(cpu.opcode)
-	keyCode := fmt.Sprintf("%X", x)
-	//fmt.Printf("checks if %s key is not pressed\n", keyCode)
+	keyCode := fmt.Sprintf("%X", cpu.registers[x])
 	if !cpu.bus.joypad.keys[keyCode].pressed {
-		//fmt.Printf("%s key is NOT pressed\n", keyCode)
 		cpu.PC = cpu.PC + 2
 	}
 }
@@ -521,7 +509,6 @@ Wait for a key press, store the value of the key in Vx.
 All execution stops until a key is pressed, then the value of that key is stored in Vx.
 */
 func (cpu *Cpu) opFx0A() {
-	fmt.Println("waiting for key")
 	x := getx(cpu.opcode)
 	key := cpu.bus.joypad.getKey()
 	cpu.registers[x] = key.value

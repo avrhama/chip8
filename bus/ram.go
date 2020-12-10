@@ -24,7 +24,7 @@ func (ram *Ram) read(address uint16) uint8 {
 }
 
 func (ram *Ram) config() {
-	//fill the mem with digit representtions
+	//fill the mem with hex digits representations
 	//0
 	ram.mem[0] = 0xF0
 	ram.mem[1] = 0x90

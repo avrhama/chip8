@@ -2,11 +2,6 @@ package bus
 
 import "fmt"
 
-/*type Register struct {
-	High byte
-	Low  byte
-}
-*/
 type Timer struct {
 	active bool
 	//decremented at a rate of 60HZ(60 times per second)
@@ -37,9 +32,10 @@ type Cpu struct {
 	st     Timer
 }
 
-func (cpu *Cpu) configCpu() {
+func (cpu *Cpu) config() {
 	cpu.opcodes = make(map[string]Opcode)
 	cpu.PC = 0x200
+	cpu.configOpcodes()
 
 }
 func (cpu *Cpu) execute() {
@@ -51,13 +47,11 @@ func (cpu *Cpu) execute() {
 	operationKey := getOperationKey(cpu.opcode)
 
 	if op, ok := cpu.opcodes[operationKey]; ok {
-		//fmt.Printf("the opcode is:%v\n", op.name)
 		op.operation()
-	} else {
+	} else { //debugging
+
 		operationKey = getOperationKey(cpu.opcode)
 		fmt.Printf("Wrong Key:%X\n", operationKey)
 
 	}
-
-	//fmt.Printf("the opcode is:%v\n", op.name)
 }
