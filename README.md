@@ -1,5 +1,5 @@
 # chip8
-a href="https://en.wikipedia.org/wiki/CHIP-8">CHIP-8 interpreter</a> written in go(golang)
+<a href="https://en.wikipedia.org/wiki/CHIP-8">CHIP-8 interpreter</a> written in go(golang)
 # Credits
 
 SDL2:
