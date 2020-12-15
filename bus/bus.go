@@ -33,7 +33,7 @@ func (bus *Bus) TurnOn(romPath string) {
 	//this variable controls the speed of the game  increasing it increases the game speed.
 	oPTT := 10
 	oPTTCounter := 0
-	sdl.Delay(5000)
+
 	for {
 
 		for event := sdl.PollEvent(); event != nil; event = sdl.PollEvent() {
@@ -41,19 +41,23 @@ func (bus *Bus) TurnOn(romPath string) {
 			case *sdl.QuitEvent:
 				return
 			case *sdl.KeyboardEvent:
+
 				if event.GetType() == sdl.KEYDOWN {
-					if key, ok := bus.joypad.keys[sdl.GetKeyName(et.Keysym.Sym)]; ok {
+
+					if key, ok := bus.joypad.keys[sdl.GetScancodeFromKey(et.Keysym.Sym)]; ok {
 						key.pressed = true
-						bus.joypad.keys[sdl.GetKeyName(et.Keysym.Sym)] = key
+						bus.joypad.keys[sdl.GetScancodeFromKey(et.Keysym.Sym)] = key
 					}
 
 				}
 
 				if event.GetType() == sdl.KEYUP {
-					if key, ok := bus.joypad.keys[sdl.GetKeyName(et.Keysym.Sym)]; ok {
+
+					if key, ok := bus.joypad.keys[sdl.GetScancodeFromKey(et.Keysym.Sym)]; ok {
 						key.pressed = false
-						bus.joypad.keys[sdl.GetKeyName(et.Keysym.Sym)] = key
+						bus.joypad.keys[sdl.GetScancodeFromKey(et.Keysym.Sym)] = key
 					}
+
 				}
 
 				break

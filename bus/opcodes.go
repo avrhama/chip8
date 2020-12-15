@@ -474,7 +474,8 @@ Checks the keyboard, and if the key corresponding to the value of Vx is currentl
 */
 func (cpu *Cpu) opEx9E() {
 	x := getx(cpu.opcode)
-	keyCode := fmt.Sprintf("%X", cpu.registers[x])
+	//keyCode := fmt.Sprintf("%X", cpu.registers[x])
+	keyCode := cpu.bus.joypad.keysMapper[cpu.registers[x]]
 	if cpu.bus.joypad.keys[keyCode].pressed {
 		cpu.PC = cpu.PC + 2
 	}
@@ -487,7 +488,8 @@ Checks the keyboard, and if the key corresponding to the value of Vx is currentl
 */
 func (cpu *Cpu) opExA1() {
 	x := getx(cpu.opcode)
-	keyCode := fmt.Sprintf("%X", cpu.registers[x])
+	//keyCode := fmt.Sprintf("%X", cpu.registers[x])
+	keyCode := cpu.bus.joypad.keysMapper[cpu.registers[x]]
 	if !cpu.bus.joypad.keys[keyCode].pressed {
 		cpu.PC = cpu.PC + 2
 	}

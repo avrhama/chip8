@@ -10,6 +10,7 @@ import (
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Println("rom path is missing!(main.exe romPath)")
+		os.Exit(1)
 	}
 	fmt.Println("Chip8")
 	bus_ := bus.Bus{}
